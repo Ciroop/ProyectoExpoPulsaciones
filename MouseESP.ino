@@ -34,7 +34,7 @@ void loop() {
   if(bleMouse.isConnected()) {
     int16_t gx, gy, gz;
     accelgyro.getRotation(&gx, &gy, &gz);
-    unsigned long startTime;
+
     int x = gz/256;
     int y = gy/256;
     Serial.print(x);
