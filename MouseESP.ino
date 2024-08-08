@@ -7,9 +7,14 @@
 
 BleMouse bleMouse;
 MPU6050 accelgyro;
+const int boton = 23; 
+
+int estaon = LOW;
 
 void setup() {
   Serial.begin(115200);
+  
+  pinMode(boton, INPUT);
   
 
   Wire.begin();
@@ -32,15 +37,29 @@ void setup() {
 
 void loop() {
   if(bleMouse.isConnected()) {
+    
     int16_t gx, gy, gz;
     accelgyro.getRotation(&gx, &gy, &gz);
 
     int x = gz/256;
-    int y = gy/256;
+    int y = gx/256;
+
+    Serial.print(gz)
+    Serial.println(gx);
+    
+/*
     Serial.print(x);
     Serial.print("  ");
-    Serial.println(y);
+    Serial.println(y);*/
+
     bleMouse.move(-x, -y);
-    delay(10);  
+
+    Serial.println(digitalRead(boton));
+
+    if (digitalRead(boton) == HIGH) {
+      Serial.println("Left click");
+      bleMouse.click(MOUSE_LEFT);      
+    }
+  delay(10);  
   }
 }
