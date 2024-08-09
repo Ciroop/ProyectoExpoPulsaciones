@@ -4,17 +4,20 @@
 #include <BleMouse.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
+#include "DFRobot_Heartrate.h"
 
 BleMouse bleMouse;
 MPU6050 accelgyro;
 const int boton = 23; 
+const int sensor =34;
 
 int estaon = LOW;
+DFRobot_Heartrate heartrate(DIGITAL_MODE);
 
 void setup() {
   Serial.begin(115200);
   
-  pinMode(boton, INPUT);
+  pinMode(boton, INPUT_PULLUP);
   
 
   Wire.begin();
@@ -36,6 +39,15 @@ void setup() {
 }
 
 void loop() {
+
+  uint8_t rateValue;
+  heartrate.getValue(sensor); ///< A1 foot sampled values
+  rateValue = heartrate.getRate(); ///< Get heart rate value 
+  if(rateValue)  {
+    Serial.println(rateValue);
+  }
+  delay(20);
+
   if(bleMouse.isConnected()) {
     
     int16_t gx, gy, gz;
@@ -44,22 +56,25 @@ void loop() {
     int x = gz/256;
     int y = gx/256;
 
-    Serial.print(gz)
-    Serial.println(gx);
+    // eje gx pasa el valor de umbral; 
+    // SUBIR EL 256 A UN VALOR MAYOR, PARA EVITAR EL DRAG (POSIBLEMNTE)
     
-/*
+
     Serial.print(x);
     Serial.print("  ");
     Serial.println(y);*/
 
     bleMouse.move(-x, -y);
 
-    Serial.println(digitalRead(boton));
+    //  Serial.println(digitalRead(boton));
 
-    if (digitalRead(boton) == HIGH) {
+    if (digitalRead(boton) == LOW) {
       Serial.println("Left click");
+      
       bleMouse.click(MOUSE_LEFT);      
     }
   delay(10);  
+  
   }
+  
 }
