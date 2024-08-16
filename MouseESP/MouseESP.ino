@@ -9,7 +9,7 @@
 BleMouse bleMouse;
 MPU6050 accelgyro;
 const int boton = 23; 
-const int sensor =34;
+const int sensor = 34;
 
 int estaon = LOW;
 DFRobot_Heartrate heartrate(DIGITAL_MODE);
@@ -41,12 +41,13 @@ void setup() {
 void loop() {
 
   uint8_t rateValue;
-  heartrate.getValue(sensor); ///< A1 foot sampled values
-  rateValue = heartrate.getRate(); ///< Get heart rate value 
+  heartrate.getValue(34);   
+  rateValue = heartrate.getRate();   // Get heart rate value 
   if(rateValue)  {
     Serial.println(rateValue);
   }
   delay(20);
+
 
   if(bleMouse.isConnected()) {
     
@@ -62,7 +63,7 @@ void loop() {
 
     Serial.print(x);
     Serial.print("  ");
-    Serial.println(y);*/
+    Serial.println(y);
 
     bleMouse.move(-x, -y);
 
