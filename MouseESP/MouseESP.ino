@@ -8,7 +8,7 @@
 
 BleMouse bleMouse;
 MPU6050 accelgyro;
-const int boton = 23; 
+const int boton = 23;
 const int sensor = 34;
 
 int estaon = LOW;
@@ -30,7 +30,7 @@ void setup() {
   Serial.println("Testing device connections...");
   Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
-  accelgyro.setXGyroOffset(-55);
+  accelgyro.setXGyroOffset(0);
   accelgyro.setYGyroOffset(66);
   accelgyro.setZGyroOffset(65);
 
@@ -39,7 +39,7 @@ void setup() {
 }
 
 void loop() {
-
+/*
   uint8_t rateValue;
   heartrate.getValue(34);   
   rateValue = heartrate.getRate();   // Get heart rate value 
@@ -47,7 +47,7 @@ void loop() {
     Serial.println(rateValue);
   }
   delay(20);
-
+*/
 
   if(bleMouse.isConnected()) {
     
@@ -55,11 +55,7 @@ void loop() {
     accelgyro.getRotation(&gx, &gy, &gz);
 
     int x = gz/256;
-    int y = gx/256;
-
-    // eje gx pasa el valor de umbral; 
-    // SUBIR EL 256 A UN VALOR MAYOR, PARA EVITAR EL DRAG (POSIBLEMNTE)
-    
+    int y = gx/256;    
 
     Serial.print(x);
     Serial.print("  ");
