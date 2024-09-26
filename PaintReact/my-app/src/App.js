@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Canvas from './components/Canvas';
 import Toolbar from './components/Toolbar';
 import './index.css'; // Asegúrate de que este archivo se importe
@@ -11,8 +11,38 @@ const App = () => {
   const [isDrawing, setIsDrawing] = useState(false); // Estado para verificar si se está dibujando
   const [currentTrace, setCurrentTrace] = useState({ points: [], sprays: [], color, lineWidth }); // Almacena el trazo actual
 
+  // Array de colores para alternar
+  const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+
+  // Cambiar color con el scroll de la rueda del mouse
+  const handleWheel = (event) => {
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 1 : -1; // Si el scroll es hacia arriba o hacia abajo
+
+    // Encontrar el índice actual del color
+    const currentIndex = colors.indexOf(color);
+
+    // Calcular el nuevo índice del color, asegurándose de que esté dentro de los límites del array
+    let newIndex = currentIndex + direction;
+    if (newIndex >= colors.length) newIndex = 0;
+    if (newIndex < 0) newIndex = colors.length - 1;
+
+    // Actualizar el color
+    setColor(colors[newIndex]);
+  };
+
+  useEffect(() => {
+    // Añadir el event listener de la rueda del mouse al montar el componente
+    window.addEventListener('wheel', handleWheel);
+
+    // Eliminar el event listener cuando se desmonte el componente
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+    };
+  }, [color]); // Asegurarse de que se actualiza el color al cambiar
+
   const clearCanvas = () => {
-    const canvas = canvasRef.current; //sdsd
+    const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
     loadBackground(); // Cargar la imagen de fondo
