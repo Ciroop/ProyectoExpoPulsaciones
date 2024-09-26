@@ -1,0 +1,11 @@
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Evita el scroll */
+}
+
+
+canvas {
+  background-image: url('../public/background.jpg'); /* Reemplaza con la ruta de tu imagen */
+  background-size: cover;
+}
