@@ -4,16 +4,17 @@
 #include "AiEsp32RotaryEncoder.h"
 #include <Adafruit_NeoPixel.h>
 
+String colores[] = {"#000000", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"};
 
 BleMouse bleMouse;
 MPU6050 accelgyro;
 
 const int sensor = 34;
 long antEncoder=0;
+long valorRel=0;
 
 #define PIN 2 
 #define NUMPIXELS 16
-#define DELAYVAL 500 
 
 #define ROTARY_ENCODER_A_PIN 19
 #define ROTARY_ENCODER_B_PIN 18
@@ -42,6 +43,18 @@ void IRAM_ATTR readEncoderISR()
 }
 
 
+void hexToRGB(String hexString, uint8_t &r, uint8_t &g, uint8_t &b) {
+  if (hexString.startsWith("#")) {
+    hexString = hexString.substring(1); // Remover el "#"
+  }
+  long number = (long) strtol(hexString.c_str(), NULL, 16); // Convertir a long
+
+  r = (number >> 16) & 0xFF; // Extraer el valor rojo
+  g = (number >> 8) & 0xFF;  // Extraer el valor verde
+  b = number & 0xFF;         // Extraer el valor azul
+}
+
+
 void setup() {
   Serial.begin(115200);
     
@@ -55,7 +68,7 @@ void setup() {
   pixels.begin();
 
   bool circleValues = true;
-  rotaryEncoder.setBoundaries(0, 100, circleValues); //minValue, maxValue, circleValues true|false (when max go to min and vice versa)
+  rotaryEncoder.setBoundaries(0, 7, circleValues); //minValue, maxValue, circleValues true|false (when max go to min and vice versa)
 
   pinMode(ROTARY_ENCODER_BUTTON_PIN, INPUT_PULLUP);
 
@@ -90,11 +103,15 @@ void loop() {
     Serial.print("  ");
     Serial.println(y);
 
-    long valorRel=0;
+
+  }
+
+      Serial.print("Value: ");
+    Serial.println(rotaryEncoder.readEncoder());
+    
     if (rotaryEncoder.encoderChanged())
     {
-      Serial.print("Value: ");
-      Serial.println(rotaryEncoder.readEncoder());
+      
       valorRel=rotaryEncoder.readEncoder()-antEncoder;
       antEncoder=rotaryEncoder.readEncoder();
     }
@@ -104,18 +121,17 @@ void loop() {
       rotary_onButtonClick();
     }
     Serial.println(valorRel);
-    bleMouse.move(-x, -y, valorRel); 
-  }
+//    bleMouse.move(-x, -y, valorRel);
 
   pixels.clear();
 
+  uint8_t red, green, blue;
+  hexToRGB(colores[valorRel], red, green, blue); // Convertir el color
+
   for(int i=0; i<NUMPIXELS; i++) { 
 
-    pixels.setPixelColor(i, pixels.Color(0, 150, 0));
-
+    pixels.setPixelColor(i, pixels.Color(red, green, blue));
     pixels.show();
-
-    delay(DELAYVAL);
   }
 
   delay(10);  
