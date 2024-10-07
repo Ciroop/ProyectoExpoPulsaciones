@@ -9,6 +9,7 @@ BleMouse bleMouse;
 MPU6050 accelgyro;
 
 const int sensor = 34;
+const int buttonPin = 4;
 
 #define PIN 2 
 #define NUMPIXELS 16
@@ -40,7 +41,7 @@ void setup() {
     
     // Llamar a updateEncoder() cuando un high o un low haya cambiado
     attachInterrupt(CLK, updateEncoder, CHANGE);
-    attachInterrupt(DT, updateEncoder, CHANGE);
+
 
     Wire.begin();
     Wire.setClock(400000);
@@ -83,28 +84,29 @@ void loop() {
     }
     bleMouse.move(-x, -y);
 }
-
+int current=1;
 void updateEncoder() {
     unsigned long currentTime = millis();
 
     // Comprobar el tiempo de debounce
     if (currentTime - lastDebounceTime > debounceDelay) {
-        currentStateCLK = digitalRead(CLK);
+        currentStateCLK = digitalRead(DT);
+        Serial.println(currentStateCLK);
+        Serial.println(lastStateCLK);
 
-        // Si el último estado actual del CLK es distinto, ocurrió un pulso 
-        if (currentStateCLK != lastStateCLK && currentStateCLK == 1) {
-            // Si el estado del DT es diferente que el estado del CLK
-            if (digitalRead(DT) != currentStateCLK) {
-                counter = (counter == 0) ? 7 : counter - 1; 
-                strcpy(currentDir, "CCW"); // Cambia la dirección a "CCW"
-            } else {
-                counter = (counter == 7) ? 0 : counter + 1; 
-                strcpy(currentDir, "CW"); // Cambia la dirección a "CW"
-            }
-            updateNeeded = true; // Indicar que se necesita actualizar el Serial
-        }
-
-        lastDebounceTime = currentTime; // Actualizar el tiempo del último cambio
+          // Si el estado del DT es diferente que el estado del CLK
+          if (currentStateCLK == lastStateCLK) {
+            current*=-1;
+          }
+          if(current==1) {
+            counter = (counter == 0) ? 7 : counter - 1; 
+            strcpy(currentDir, "CCW"); 
+          } else {
+            counter = (counter == 7) ? 0 : counter + 1; 
+            strcpy(currentDir, "CW"); 
+          }
+          updateNeeded = true;
+        lastDebounceTime = currentTime;
     }
     lastStateCLK = currentStateCLK; // Guardar el último estado del CLK 
 }
