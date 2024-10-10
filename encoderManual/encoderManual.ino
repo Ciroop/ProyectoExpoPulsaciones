@@ -93,6 +93,7 @@ void loop() {
 
 
 int current=1;
+int valorRel = 0;
 void updateEncoder() {
     int currentStateCLK = digitalRead(CLK);
     int currentStateDT = digitalRead(DT);
@@ -102,14 +103,17 @@ void updateEncoder() {
         if (currentStateDT != currentStateCLK) {
             counter = (counter == 7) ? 0 : counter + 1; // CW
             direction = 'C';
+            bleMouse.move(0,0,1);
         } else {
             counter = (counter == 0) ? 7 : counter - 1; // CCW
             direction = 'W';
+            bleMouse.move(0,0,-1);
         }
         updateNeeded = true; // Indica que hay una actualización
     }
     
     lastStateCLK = currentStateCLK; // Guardar el último estado del CLK 
+    
 }
 
 void buttonPressed() {
@@ -117,7 +121,8 @@ void buttonPressed() {
     
     // Comprobar si el tiempo desde la última presión es mayor que el debounceDelay
     if (currentTime - lastButtonPressTime > debounceDelay) {
-        Serial.println("Button Pressed!"); // Imprimir mensaje al presionar el botón
-        lastButtonPressTime = currentTime; // Actualizar el tiempo del último pulso
+      bleMouse.click(MOUSE_LEFT);
+      Serial.println("Button Pressed!"); // Imprimir mensaje al presionar el botón
+      lastButtonPressTime = currentTime; // Actualizar el tiempo del último pulso
     }
 }
