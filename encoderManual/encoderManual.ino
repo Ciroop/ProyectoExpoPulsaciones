@@ -8,8 +8,12 @@ String colores[] = {"#000000", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF0
 BleMouse bleMouse;
 MPU6050 accelgyro;
 
+ int counter = 0; // Contador
+ char direction = ' '; // Direccion
+
+
 const int sensor = 34;
-const int buttonPin = 4;
+const int buttonPin = 25; 
 
 #define PIN 2 
 #define NUMPIXELS 16
@@ -17,7 +21,6 @@ const int buttonPin = 4;
 #define CLK 27
 #define DT 26
 
-int counter = 0; // Contador
 char currentDir[4] = ""; // Usar array de caracteres
 
 int currentStateCLK;
@@ -28,19 +31,21 @@ bool updateNeeded = false;
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-unsigned long lastDebounceTime = 0; // Último tiempo de cambio de estado
-const unsigned long debounceDelay = 50; // Tiempo de debounce (50 ms)
+unsigned long lastButtonPressTime = 0;
+const unsigned long debounceDelay = 200; 
 
 void setup() {
     Serial.begin(115200);
     pinMode(CLK, INPUT);
     pinMode(DT, INPUT);
+    pinMode(buttonPin, INPUT_PULLUP); 
 
     // Leer el estado inicial del CLK
     lastStateCLK = digitalRead(CLK);
     
     // Llamar a updateEncoder() cuando un high o un low haya cambiado
-    attachInterrupt(CLK, updateEncoder, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(CLK), updateEncoder, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(buttonPin), buttonPressed, FALLING);
 
 
     Wire.begin();
@@ -70,7 +75,7 @@ void loop() {
     if (updateNeeded) {
         updateNeeded = false; // Resetear el flag
         Serial.print("Direction: ");
-        Serial.print(currentDir);
+        Serial.print(direction);
         Serial.print(" | Counter: ");
         Serial.println(counter);
     }
@@ -83,30 +88,36 @@ void loop() {
         y = gx / 256;    
     }
     bleMouse.move(-x, -y);
+    delay(1);
 }
+
+
 int current=1;
 void updateEncoder() {
-    unsigned long currentTime = millis();
+    int currentStateCLK = digitalRead(CLK);
+    int currentStateDT = digitalRead(DT);
 
-    // Comprobar el tiempo de debounce
-    if (currentTime - lastDebounceTime > debounceDelay) {
-        currentStateCLK = digitalRead(DT);
-        Serial.println(currentStateCLK);
-        Serial.println(lastStateCLK);
-
-          // Si el estado del DT es diferente que el estado del CLK
-          if (currentStateCLK == lastStateCLK) {
-            current*=-1;
-          }
-          if(current==1) {
-            counter = (counter == 0) ? 7 : counter - 1; 
-            strcpy(currentDir, "CCW"); 
-          } else {
-            counter = (counter == 7) ? 0 : counter + 1; 
-            strcpy(currentDir, "CW"); 
-          }
-          updateNeeded = true;
-        lastDebounceTime = currentTime;
+    // Comprobar si el estado del DT es diferente al estado del CLK
+    if (currentStateCLK != lastStateCLK) {
+        if (currentStateDT != currentStateCLK) {
+            counter = (counter == 7) ? 0 : counter + 1; // CW
+            direction = 'C';
+        } else {
+            counter = (counter == 0) ? 7 : counter - 1; // CCW
+            direction = 'W';
+        }
+        updateNeeded = true; // Indica que hay una actualización
     }
+    
     lastStateCLK = currentStateCLK; // Guardar el último estado del CLK 
+}
+
+void buttonPressed() {
+    unsigned long currentTime = millis();
+    
+    // Comprobar si el tiempo desde la última presión es mayor que el debounceDelay
+    if (currentTime - lastButtonPressTime > debounceDelay) {
+        Serial.println("Button Pressed!"); // Imprimir mensaje al presionar el botón
+        lastButtonPressTime = currentTime; // Actualizar el tiempo del último pulso
+    }
 }
