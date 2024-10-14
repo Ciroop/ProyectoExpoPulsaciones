@@ -10,7 +10,7 @@ MPU6050 accelgyro;
 
 const int sensor = 34;
 
-#define PIN 2 
+#define PIN 19 
 #define NUMPIXELS 16
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
