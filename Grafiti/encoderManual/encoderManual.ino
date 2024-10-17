@@ -1,7 +1,14 @@
+#include <WiFi.h>
+#include <WebSocketsServer.h>
 #include <BleMouse.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
 #include <Adafruit_NeoPixel.h>
+
+const char* ssid = "IPMLabo"; // Reemplaza con tu SSID
+const char* password = "j2LK98!we"; // Reemplaza con tu contraseña
+
+WebSocketsServer webSocket = WebSocketsServer(81); // Puerto 81
 
 String colores[] = {"#010101", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"};
 
@@ -59,7 +66,17 @@ void setup() {
     // Llamar a updateEncoder() cuando un high o un low haya cambiado
     attachInterrupt(digitalPinToInterrupt(CLK), updateEncoder, CHANGE);
 
+////////////////////////////////////////////////////
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        Serial.println("Conectando a WiFi...");
+    }
+    Serial.println("Conectado a WiFi");
 
+    webSocket.begin();
+    webSocket.onEvent(webSocketEvent);
+ ////////////////////////////////////////////////////////
 
     Wire.begin();
     Wire.setClock(400000);
@@ -88,6 +105,8 @@ const int smoothingFactor = 1.2; // Factor de suavizado
 int16_t gx, gy, gz;
 
 void loop() {
+
+  webSocket.loop();
     
     if (updateNeeded) {
         updateNeeded = false; // Resetear el flag
@@ -142,6 +161,32 @@ void loop() {
     }
 
   delay(10);  
+}
+
+void setColor(String hexColor) {
+    uint8_t red, green, blue;
+    hexToRGB(hexColor, red, green, blue);
+
+    for(int i = 0; i < NUMPIXELS; i++) { 
+        pixels.setPixelColor(i, pixels.Color(red, green, blue));
+    }
+    pixels.show();
+}
+
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+    switch(type) {
+        case WStype_DISCONNECTED:
+            Serial.printf("Cliente desconectado: %u\n", num);
+            break;
+        case WStype_CONNECTED:
+            Serial.printf("Cliente conectado desde: %s\n", payload);
+            break;
+        case WStype_TEXT:
+            Serial.printf("Mensaje recibido: %s\n", payload);
+            String color = String((char*)payload);
+            setColor(color); // Cambia el color de los LEDs
+            break;
+    }
 }
 
 

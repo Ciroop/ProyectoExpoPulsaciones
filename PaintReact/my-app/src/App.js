@@ -10,37 +10,54 @@ const App = () => {
   const [traces, setTraces] = useState([]); // Almacena los trazos dibujados
   const [isDrawing, setIsDrawing] = useState(false); // Estado para verificar si se está dibujando
   const [currentTrace, setCurrentTrace] = useState({ points: [], sprays: [], color, lineWidth }); // Almacena el trazo actual
+  const [socket, setSocket] = useState(null); // Para manejar el WebSocket
 
   // Array de colores para alternar
   const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
 
-  // Cambiar color con el scroll de la rueda del mouse
+  useEffect(() => {
+    const webSocket = new WebSocket('ws://172.16.2.166:81/');
+    setSocket(webSocket);
+
+    webSocket.onopen = () => {
+      console.log('Conexión WebSocket establecida');
+      console.log("Estado del WebSocket:", webSocket.readyState);
+      webSocket.send(color);
+    };
+
+    webSocket.onmessage = (event) => {
+      console.log('Mensaje del ESP32:', event.data);
+    };
+
+    webSocket.onclose = () => {
+      console.log('Conexión WebSocket cerrada');
+    };
+
+    return () => {
+      webSocket.close();
+    };
+  }, []);
+
   const handleWheel = (event) => {
+    console.log("Evento wheel detectado"); // Verificar si se activa el evento
     event.preventDefault();
-    const direction = event.deltaY < 0 ? 1 : -1; // Si el scroll es hacia arriba o hacia abajo
+    const direction = event.deltaY < 0 ? 1 : -1;
 
-    // Encontrar el índice actual del color
     const currentIndex = colors.indexOf(color);
-
-    // Calcular el nuevo índice del color, asegurándose de que esté dentro de los límites del array
     let newIndex = currentIndex + direction;
     if (newIndex >= colors.length) newIndex = 0;
     if (newIndex < 0) newIndex = colors.length - 1;
 
-    // Actualizar el color
-    setColor(colors[newIndex]);
+    const newColor = colors[newIndex];
+    setColor(newColor);
+
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      console.log("Enviando color:", newColor); // Para verificar que se envía el nuevo color
+      socket.send(newColor);
+    } else {
+      console.log("WebSocket no está abierto. Estado:", socket.readyState);
+    }
   };
-
-  useEffect(() => {
-    // Añadir el event listener de la rueda del mouse al montar el componente
-    window.addEventListener('wheel', handleWheel);
-
-    // Eliminar el event listener cuando se desmonte el componente
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-    };
-  }, [color]); // Asegurarse de que se actualiza el color al cambiar
-
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
@@ -176,7 +193,8 @@ const App = () => {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div style={{ display: 'flex', height: '100vh' }}
+    onWheel={handleWheel} >
       <Toolbar setColor={setColor} setLineWidth={setLineWidth} clearCanvas={clearCanvas} undo={undo} />
       <Canvas
         ref={canvasRef}
