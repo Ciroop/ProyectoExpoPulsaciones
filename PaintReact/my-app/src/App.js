@@ -21,12 +21,13 @@ const App = () => {
 
     webSocket.onopen = () => {
       console.log('Conexión WebSocket establecida');
-      console.log("Estado del WebSocket:", webSocket.readyState);
-      webSocket.send(color);
     };
 
     webSocket.onmessage = (event) => {
       console.log('Mensaje del ESP32:', event.data);
+      if (event.data === 'scrollUp' || event.data === 'scrollDown') {
+        handleWheel({ deltaY: event.data === 'scrollUp' ? -1 : 1 });
+      }
     };
 
     webSocket.onclose = () => {
@@ -39,10 +40,7 @@ const App = () => {
   }, []);
 
   const handleWheel = (event) => {
-    console.log("Evento wheel detectado"); // Verificar si se activa el evento
-    event.preventDefault();
     const direction = event.deltaY < 0 ? 1 : -1;
-
     const currentIndex = colors.indexOf(color);
     let newIndex = currentIndex + direction;
     if (newIndex >= colors.length) newIndex = 0;
@@ -52,12 +50,14 @@ const App = () => {
     setColor(newColor);
 
     if (socket && socket.readyState === WebSocket.OPEN) {
-      console.log("Enviando color:", newColor); // Para verificar que se envía el nuevo color
-      socket.send(newColor);
+      console.log("Enviando color:", newColor); 
+      socket.send(newColor); 
     } else {
       console.log("WebSocket no está abierto. Estado:", socket.readyState);
     }
   };
+
+  
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');

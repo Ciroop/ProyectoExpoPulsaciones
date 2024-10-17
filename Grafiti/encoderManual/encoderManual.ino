@@ -1,16 +1,19 @@
-#include <WiFi.h>
-#include <WebSocketsServer.h>
 #include <BleMouse.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
 #include <Adafruit_NeoPixel.h>
+#include <WiFi.h>
+#include <WebSocketsServer.h>
+
+String colores[] = {"#010101", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"};
 
 const char* ssid = "IPMLabo"; // Reemplaza con tu SSID
 const char* password = "j2LK98!we"; // Reemplaza con tu contraseña
 
-WebSocketsServer webSocket = WebSocketsServer(81); // Puerto 81
+String color;
 
-String colores[] = {"#010101", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"};
+
+WebSocketsServer webSocket = WebSocketsServer(81); // Puerto 81
 
 BleMouse bleMouse;
 MPU6050 accelgyro;
@@ -66,7 +69,7 @@ void setup() {
     // Llamar a updateEncoder() cuando un high o un low haya cambiado
     attachInterrupt(digitalPinToInterrupt(CLK), updateEncoder, CHANGE);
 
-////////////////////////////////////////////////////
+     // Conectar a WiFi
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
@@ -76,7 +79,7 @@ void setup() {
 
     webSocket.begin();
     webSocket.onEvent(webSocketEvent);
- ////////////////////////////////////////////////////////
+
 
     Wire.begin();
     Wire.setClock(400000);
@@ -129,17 +132,17 @@ void loop() {
     if (x > 0) {
       x = x / 1.05;  // Aplica una suavización adicional para movimientos a la izquierda
     }
-
+      /*
     Serial.print(x);
     Serial.print("----");
     Serial.println(y);
-
+      */
     bleMouse.move(-x, -y);
   }
      
  
 
-    hexToRGB(colores[counter], red, green, blue); // Convertir el color
+    hexToRGB(color, red, green, blue); // Convertir el color
 
     for(int i=0; i<NUMPIXELS; i++) { 
       pixels.setPixelColor(i, pixels.Color(red, green, blue));
@@ -163,28 +166,22 @@ void loop() {
   delay(10);  
 }
 
-void setColor(String hexColor) {
-    uint8_t red, green, blue;
-    hexToRGB(hexColor, red, green, blue);
-
-    for(int i = 0; i < NUMPIXELS; i++) { 
-        pixels.setPixelColor(i, pixels.Color(red, green, blue));
-    }
-    pixels.show();
-}
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-    switch(type) {
-        case WStype_DISCONNECTED:
-            Serial.printf("Cliente desconectado: %u\n", num);
+    switch (type) {
+        case WStype_TEXT:
+            // Crear un String desde el payload
+            color = "";
+            for (size_t i = 0; i < length; i++) {
+                color += (char)payload[i]; // Convertir cada byte a char y agregarlo al String
+            }
+            Serial.printf("El color recibido es: %s\n", color.c_str());
             break;
         case WStype_CONNECTED:
-            Serial.printf("Cliente conectado desde: %s\n", payload);
+            Serial.printf("Cliente conectado desde: %u\n", num);
             break;
-        case WStype_TEXT:
-            Serial.printf("Mensaje recibido: %s\n", payload);
-            String color = String((char*)payload);
-            setColor(color); // Cambia el color de los LEDs
+        case WStype_DISCONNECTED:
+            Serial.printf("Cliente desconectado: %u\n", num);
             break;
     }
 }
