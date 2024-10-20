@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-const Toolbar = ({ setColor, setLineWidth, clearCanvas, undo }) => {
+const Toolbar = ({ setColor, setLineWidth, clearCanvas, undo, saveDrawing,  }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   const handleMouseEnter = () => {
@@ -84,6 +84,12 @@ const Toolbar = ({ setColor, setLineWidth, clearCanvas, undo }) => {
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
           <button onClick={undo} style={buttonStyle} title="Deshacer">
             <i className="bi bi-arrow-counterclockwise" />
+          </button>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <button onClick={saveDrawing} style={buttonStyle} title="Guardar">
+            <i className="bi bi-save" />
           </button>
         </div>
 

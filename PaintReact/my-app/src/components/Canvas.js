@@ -3,7 +3,7 @@ import React, { useEffect, forwardRef } from 'react';
 const Canvas = forwardRef(({ color, lineWidth, startDrawing, draw, stopDrawing }, ref) => {
   useEffect(() => {
     const canvas = ref.current;
-    const context = canvas.getContext('2d');
+    
 
     // Cargar la imagen de fondo
     loadBackground();
@@ -23,13 +23,13 @@ const Canvas = forwardRef(({ color, lineWidth, startDrawing, draw, stopDrawing }
       canvas.removeEventListener('mouseup', stopDrawing);
       canvas.removeEventListener('mouseleave', stopDrawing);
     };
-  }, [color, lineWidth, ref, startDrawing, draw, stopDrawing]);
+  }, [color, lineWidth, ref, startDrawing, draw, stopDrawing,]);
 
   const loadBackground = () => {
     const canvas = ref.current;
     const context = canvas.getContext('2d');
     const img = new Image();
-    img.src = '/path/to/background/image.jpg'; // Reemplaza con la ruta de tu imagen
+    img.src = 'public\background.jpg'; // Reemplaza con la ruta de tu imagen
     img.onload = () => {
       context.drawImage(img, 0, 0, canvas.width, canvas.height);
     };

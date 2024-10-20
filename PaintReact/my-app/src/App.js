@@ -3,6 +3,7 @@ import Canvas from './components/Canvas';
 import Toolbar from './components/Toolbar';
 import './index.css'; // Asegúrate de que este archivo se importe
 
+
 const App = () => {
   const canvasRef = useRef(null);
   const [color, setColor] = useState('#000000');
@@ -57,6 +58,51 @@ const App = () => {
     }
   };
 
+  const saveDrawing = () => {
+  const canvas = canvasRef.current;
+  const context = canvas.getContext('2d');
+
+  // Cargar la imagen de fondo
+  const img = new Image();
+  img.src = 'background.jpg'; // Asegúrate de que esta ruta sea correcta
+  img.onload = () => {
+    // Dibuja el fondo en el canvas
+    context.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas antes de dibujar el fondo
+    context.drawImage(img, 0, 0, canvas.width, canvas.height); // Dibuja el fondo
+    // Ahora dibuja los trazos
+    traces.forEach(({ points, sprays, color, lineWidth }) => {
+      context.strokeStyle = color;
+      context.lineWidth = lineWidth;
+      context.beginPath();
+      context.moveTo(points[0].x, points[0].y);
+      points.forEach(point => {
+        context.lineTo(point.x, point.y);
+      });
+      context.stroke();
+
+      // Dibuja los sprays
+      sprays.forEach((spray, index) => {
+        spray.forEach(({ offsetX, offsetY, radius }) => {
+          context.beginPath();
+          context.arc(points[index].x + offsetX, points[index].y + offsetY, radius, 0, Math.PI * 2);
+          context.fillStyle = color;
+          context.fill();
+        });
+      });
+    });
+
+    // Ahora que el fondo y los trazos están dibujados, conviértelo a una imagen
+    const dataURL = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'drawing.png';
+    link.click();
+  };
+
+  img.onerror = (err) => {
+    console.error('Error al cargar la imagen de fondo:', err);
+  };
+};
   
   const clearCanvas = () => {
     const canvas = canvasRef.current;
@@ -70,7 +116,7 @@ const App = () => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
     const img = new Image();
-    img.src = '/path/to/background/image.jpg'; // Ruta de la imagen de fondo
+    img.src = 'public\background.jpg'; // Ruta de la imagen de fondo
     img.onload = () => {
       context.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
@@ -195,7 +241,13 @@ const App = () => {
   return (
     <div style={{ display: 'flex', height: '100vh' }}
     onWheel={handleWheel} >
-      <Toolbar setColor={setColor} setLineWidth={setLineWidth} clearCanvas={clearCanvas} undo={undo} />
+      <Toolbar 
+      setColor={setColor} 
+      setLineWidth={setLineWidth} 
+      clearCanvas={clearCanvas} 
+      undo={undo} 
+      saveDrawing={saveDrawing} // Añadir la función de guardar
+      />
       <Canvas
         ref={canvasRef}
         color={color}
