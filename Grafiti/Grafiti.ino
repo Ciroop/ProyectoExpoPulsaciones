@@ -22,7 +22,7 @@ int counter = 0; // Contador
 char direction = ' '; // Direccion
 long valorRel=0;
 
-const int buttonPin = 25; 
+const int buttonPin = 33; 
 
 #define PIN 19 
 #define NUMPIXELS 19
@@ -142,41 +142,42 @@ void loop() {
      
  
 
-    hexToRGB(color, red, green, blue); // Convertir el color
+  hexToRGB(color, red, green, blue); // Convertir el color
 
-    for(int i=0; i<NUMPIXELS; i++) { 
-      pixels.setPixelColor(i, pixels.Color(red, green, blue));
-    }
-    pixels.show();
+  for(int i=0; i<NUMPIXELS; i++) { 
+    pixels.setPixelColor(i, pixels.Color(red, green, blue));
+  }
+  pixels.show();
 
 
-    // Mantener el click si el botón está presionado
-    if (buttonHeld) {
-      bleMouse.press(MOUSE_LEFT);
-    } else {
-      bleMouse.release(MOUSE_LEFT);
-    }
+  // Mantener el click si el botón está presionado
+  if (buttonHeld) {
+    bleMouse.press(MOUSE_LEFT);
+  } else {
+    bleMouse.release(MOUSE_LEFT);
+  }
 
   if (digitalRead(buttonPin) == LOW) {
-        buttonHeld = true;  // El botón está presionado
-    } else {
-        buttonHeld = false; // El botón está liberado
-    }
-
+    buttonHeld = true;  // El botón está presionado
+  } else {
+    buttonHeld = false; // El botón está liberado
+  }
+  
+  Serial.println(digitalRead(buttonPin));
   delay(10);  
 }
 
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
     switch (type) {
-        case WStype_TEXT:
-            // Crear un String desde el payload
-            color = "";
-            for (size_t i = 0; i < length; i++) {
-                color += (char)payload[i]; // Convertir cada byte a char y agregarlo al String
-            }
-            Serial.printf("El color recibido es: %s\n", color.c_str());
-            break;
+      case WStype_TEXT:
+          char buffer[7]; // Suponiendo que el color es siempre un código hexadecimal de 7 caracteres (ej. "#FF00FF")if (length < sizeof(buffer)) {
+          memcpy(buffer, payload, length); 
+          buffer[length] = '\0'; // Agregar el terminador nulo al final     
+          color = String(buffer); // Asignar a la variable color        
+          Serial.printf("El color recibido es: %s\n", color.c_str());
+             
+        break;
         case WStype_CONNECTED:
             Serial.printf("Cliente conectado desde: %u\n", num);
             break;
@@ -184,7 +185,28 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
             Serial.printf("Cliente desconectado: %u\n", num);
             break;
     }
-}
+    
+  }
+
+
+
+/*cppCopiar códigovoid webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+    switch (type) {
+        case WStype_TEXT:
+            char buffer[7]; // Suponiendo que el color es siempre un código hexadecimal de 7 caracteres (ej. "#FF00FF")if (length < sizeof(buffer)) {
+                memcpy(buffer, payload, length); 
+                buffer[length] = '\0'; // Agregar el terminador nulo al final     
+                color = String(buffer); // Asignar a la variable color        
+                Serial.printf("El color recibido es: %s\n", color.c_str());
+            }break;
+        case WStype_CONNECTED:
+            Serial.printf("Cliente conectado desde: %u\n", num);
+            break;
+        case WStype_DISCONNECTED:
+            Serial.printf("Cliente desconectado: %u\n", num);
+            break;
+    }
+}*/
 
 
 int current=1;
@@ -208,15 +230,5 @@ void updateEncoder() {
         if (counter<0) counter=6;
     }
     
-    lastStateCLK = currentStateCLK; // Guardar el último estado del CLK 
-    
-}
-
-void buttonPressed() {
-    // Cambiar el estado de buttonHeld basado en el estado del botón
-    if (digitalRead(buttonPin) == LOW) {
-        buttonHeld = true;  // El botón está presionado
-    } else {
-        buttonHeld = false; // El botón está liberado
-    }
+    lastStateCLK = currentStateCLK; // Guardar el último estado del CLK
 }
