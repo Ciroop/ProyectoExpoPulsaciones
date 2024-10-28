@@ -7,8 +7,9 @@
 
 String colores[] = {"#010101", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"};
 
-const char* ssid = "IPMLabo"; // Reemplaza con tu SSID
-const char* password = "j2LK98!we"; // Reemplaza con tu contraseña
+const char* ssid = "grafiti";     // Reemplaza con el nombre de tu red Wi-Fi
+const char* password = "cirociro"; // Reemplaza con la contraseña de tu red
+
 
 String color;
 
@@ -22,7 +23,7 @@ int counter = 0; // Contador
 char direction = ' '; // Direccion
 long valorRel=0;
 
-const int buttonPin = 33; 
+const int buttonPin = 25; 
 
 #define PIN 19 
 #define NUMPIXELS 19
@@ -84,7 +85,7 @@ void setup() {
     Wire.begin();
     Wire.setClock(400000);
 
-    pixels.setBrightness(20);
+    
     pixels.begin();
 
     // Inicializar el MPU6050
@@ -94,7 +95,7 @@ void setup() {
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
     accelgyro.setXGyroOffset(100);
-    accelgyro.setYGyroOffset(66);
+    accelgyro.setYGyroOffset(0);
     accelgyro.setZGyroOffset(65);
 
     Serial.println("Starting BLE work!");
@@ -104,7 +105,7 @@ void setup() {
 int x;
 int y;
 uint8_t red, green, blue;
-const int smoothingFactor = 1.2; // Factor de suavizado
+const int smoothingFactor = 1.4; // Factor de suavizado
 int16_t gx, gy, gz;
 
 void loop() {
@@ -125,18 +126,18 @@ void loop() {
     accelgyro.getRotation(&gx, &gy, &gz);
 
     // Suavizar las lecturas
-    x = (gz / 256) / smoothingFactor;
+    x = (gy / 256) / smoothingFactor * -1;
     y = (gx / 256) / smoothingFactor;
 
 
-    if (x > 0) {
-      x = x / 1.05;  // Aplica una suavización adicional para movimientos a la izquierda
+    if (x < 0) {
+      x = x / 1.05;  // Aplica una suavización adicional para movimientos a la derecha
     }
-      /*
+      
     Serial.print(x);
     Serial.print("----");
     Serial.println(y);
-      */
+      
     bleMouse.move(-x, -y);
   }
      
@@ -163,8 +164,7 @@ void loop() {
     buttonHeld = false; // El botón está liberado
   }
   
-  Serial.println(digitalRead(buttonPin));
-  delay(10);  
+  delay(5);  
 }
 
 

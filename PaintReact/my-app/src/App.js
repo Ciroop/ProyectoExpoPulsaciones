@@ -17,7 +17,7 @@ const App = () => {
   const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
 
   useEffect(() => {
-    const webSocket = new WebSocket('ws://172.16.1.36:81/');
+    const webSocket = new WebSocket('ws://192.168.0.100:81/');
     setSocket(webSocket);
 
     webSocket.onopen = () => {
