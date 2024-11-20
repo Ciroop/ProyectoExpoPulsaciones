@@ -60,7 +60,7 @@ Para preguntas o sugerencias, puedes contactarnos en:
  - [cerutticiro1@gmail.com](mailto:cerutticiro1@gmail.com)
   
 - **LinkedIn**:
- - [Lucas Panzera](www.linkedin.com/in/panzeralucas)  
+ - [Lucas Panzera](https://www.linkedin.com/in/panzeralucas/)  
  - [Ciro Cerutti](https://www.linkedin.com/in/ciro-cerutti-7797012b1/)  
 
 
