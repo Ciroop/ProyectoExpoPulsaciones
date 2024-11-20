@@ -56,11 +56,11 @@ Este proyecto utiliza hardware como el ESP32, un giroscopio MPU6050 y un encoder
 Para preguntas o sugerencias, puedes contactarnos en:  
 
 - **Email**:
-  [lucaspanzera13@gmail.com](mailto:lucaspanzera13@gmail.com) 
-  [cerutticiro1@gmail.com](mailto:cerutticiro1@gmail.com)
+ - [lucaspanzera13@gmail.com](mailto:lucaspanzera13@gmail.com) 
+ - [cerutticiro1@gmail.com](mailto:cerutticiro1@gmail.com)
   
 - **LinkedIn**:
-  [Lucas Panzera](www.linkedin.com/in/panzeralucas)  
-  [Ciro Cerutti](https://www.linkedin.com/in/ciro-cerutti-7797012b1/)  
+ - [Lucas Panzera](www.linkedin.com/in/panzeralucas)  
+ - [Ciro Cerutti](https://www.linkedin.com/in/ciro-cerutti-7797012b1/)  
 
 
